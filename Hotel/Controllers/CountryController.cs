@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hotel.Data;
 using Hotel.IRepository;
 using Hotel.Models;
 using Microsoft.AspNetCore.Http;
@@ -55,6 +56,86 @@ namespace Hotel.Controllers
             {
                 // _logger.LogError(ex, "Please try again later.");
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCountry([FromBody] CreateCountryDTO countryDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(400);
+            }
+
+            try
+            {
+                var country = _mapper.Map<Country>(countryDTO);
+                await _uniteOfWork.Countries.Insert(country);
+                await _uniteOfWork.Save();
+
+                return Ok(country);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Error");
+            }
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateCountry(int id, [FromBody] UpdateCountryDTO countryDTO)
+        {
+            if(!ModelState.IsValid || id < 1)
+            {
+                return StatusCode(400, "Invalid Data");
+            }
+
+            var country = await _uniteOfWork.Countries.Get(i => i.Id == id);
+
+            if(country == null)
+            {
+                return StatusCode(404, "Not Found");
+            }
+
+            try
+            {
+                _mapper.Map(countryDTO, country);
+                _uniteOfWork.Countries.Update(country);
+                await _uniteOfWork.Save();
+
+                return Ok(country);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Server Error");
+            }
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteCountry(int id)
+        {
+            if (id < 1)
+            {
+                return StatusCode(400, "Invalid Id");
+            }
+
+            var counrty = await _uniteOfWork.Countries.Get(i => i.Id == id);
+
+            if (counrty == null)
+            {
+                return StatusCode(404, "Not Found");
+            }
+
+            try
+            {
+                await _uniteOfWork.Countries.Delete(id);
+                await _uniteOfWork.Save();
+                return NoContent();
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500, "Server Error");
             }
         }
     }

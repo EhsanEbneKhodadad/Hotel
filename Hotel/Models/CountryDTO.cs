@@ -15,6 +15,8 @@ namespace Hotel.Models
         public string ShortName { get; set; }
     }
 
+    public class UpdateCountryDTO : CreateCountryDTO { }
+
     public class CountryDTO: CreateCountryDTO
     {
         public int Id { get; set; }

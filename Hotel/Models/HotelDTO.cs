@@ -13,13 +13,16 @@ namespace Hotel.Models
         [Required]
         [ForeignKey(nameof(Country))]
         public int CountryId { get; set; }
-        public Country Country { get; set; }
 
     }
+
+    public class UpdateHotelDTO: CreateHotelDataDTO { }
 
     public class HotelDataDTO: CreateHotelDataDTO
     {
         public int Id { get; set; }
+        public Country Country { get; set; }
+
     }
-   
+
 }

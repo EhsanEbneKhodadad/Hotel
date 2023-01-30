@@ -22,6 +22,7 @@ namespace Hotel.Models
             get; set;
         }
 
-        public ICollection<string> Roles { get; set; }  
+        public ICollection<string> Roles { get; set; }
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Hotel.Data;
 using Hotel.Models;
+using Hotel.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,18 +16,16 @@ namespace Hotel.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApiUser> _userManager;
-        // private readonly SignInManager<ApiUser> _signInManager;
-        private readonly ILogger<AccountController> _logger;
         private readonly IMapper _mapper;
+        private readonly IAuthManager _authManager;
 
 
 
-        public AccountController(UserManager<ApiUser> userManagerm, ILogger<AccountController> logger, IMapper mapper)
+        public AccountController(UserManager<ApiUser> userManagerm, IMapper mapper, IAuthManager authManager)
         {
             _userManager = userManagerm;
-            // _signInManager= signInManager;
-            _logger= logger;
             _mapper=mapper;
+            _authManager = authManager;
         }
 
         [HttpPost]
@@ -49,7 +48,7 @@ namespace Hotel.Controllers
                     return StatusCode(500, result.Errors);
                 }
 
-                _userManager.AddToRolesAsync(user, userDTO.Roles);
+                await _userManager.AddToRolesAsync(user, userDTO.Roles);
 
                 return Ok("Registed Successfully");
             }
@@ -60,31 +59,28 @@ namespace Hotel.Controllers
             }
         }
 
-        //[HttpPost]
-        //[Route("login")]
-        //public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return StatusCode(400, "Invalid Data");
-        //    }
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return StatusCode(400, "Invalid Data");
+            }
 
-        //    try
-        //    {
-        //        var result = await _signInManager.PasswordSignInAsync(loginDTO.Email, loginDTO.Password, false, false);
+            try
+            {
+                if(!await _authManager.ValidateUser(loginDTO)) { 
+                    return Unauthorized();
+                }
 
-        //        if (!result.Succeeded)
-        //        {
-        //            return Unauthorized(loginDTO);
-        //        }
+                return Ok(new {Token = _authManager.CreateToken()});
+            }
+            catch (System.Exception)
+            {
 
-        //        return Ok("Login Successfully");
-        //    }
-        //    catch (System.Exception)
-        //    {
-
-        //        return StatusCode(500, "Internal server error");
-        //    }
-        //}
+                return StatusCode(500, "Internal server error");
+            }
+        }
     }
 }

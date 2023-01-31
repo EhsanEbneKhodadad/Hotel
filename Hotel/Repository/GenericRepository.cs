@@ -1,11 +1,13 @@
 ﻿using Hotel.Data;
 using Hotel.IRepository;
+using Hotel.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace Hotel.Repository
 {
@@ -67,6 +69,16 @@ namespace Hotel.Repository
             }
 
             return await query.ToListAsync();
+        }
+
+        public async Task<IPagedList<T>> GetByParams(RequestParams requestParams)
+        {
+
+            IQueryable<T> query = _dbSet;
+            
+
+            return await query.ToPagedListAsync(requestParams.PageNumber,requestParams.PageSize);
+
         }
 
         public async Task Insert(T entity)
